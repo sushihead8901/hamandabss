@@ -15,11 +15,6 @@ const SUPABASE_KEY =
 
 let books = [];
 
-
-/* =========================
-   CART
-========================= */
-
 let cart = [];
 
 let currentBook = null;
@@ -36,7 +31,7 @@ async function loadBooks() {
   try {
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/itb_contacts?select=id,name,number,type_of_book&order=id.asc`,
+      `${SUPABASE_URL}/rest/v1/itb_contacts?select=id,name,stock,type_of_book,authors,price&order=id.asc`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -56,10 +51,7 @@ async function loadBooks() {
     const data = await response.json();
 
 
-    /*
-      Convert Supabase rows into the format
-      used by the ITB store.
-    */
+    /* Convert Supabase data into store data */
 
     books = data.map(book => ({
 
@@ -67,27 +59,22 @@ async function loadBooks() {
 
       title: book.name,
 
-      author: "ITB Author",
+      author: book.authors || "Unknown",
 
-      category: book.type_of_book || "Fiction",
+      category:
+        book.type_of_book || "Fiction",
 
-      /*
-        Your current "number" column contains
-        "Out of Stock" for the Dino Nuggets book.
+      price:
+        Number(book.price) || 0,
 
-        Since there is no price column yet,
-        the store uses $0.00 until a price is added.
-      */
-
-      price: 0,
-
-      stock: book.number,
+      stock:
+        Number(book.stock) || 0,
 
       image:
         "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=700&q=80",
 
       description:
-        book.number === "Out of Stock"
+        book.stock === 0
           ? "This book is currently out of stock."
           : "A book available from ITB'S — Ink to Books."
 
@@ -95,7 +82,7 @@ async function loadBooks() {
 
 
     console.log(
-      "Books successfully loaded from Supabase:",
+      "Books loaded from Supabase:",
       books
     );
 
@@ -178,6 +165,12 @@ function displayBooks(list) {
       openProduct(book);
 
 
+    const stockDisplay =
+      book.stock <= 0
+        ? `<p class="price">Out of Stock</p>`
+        : `<p class="price">$${book.price.toFixed(2)}</p>`;
+
+
     card.innerHTML = `
 
       <img
@@ -197,11 +190,7 @@ function displayBooks(list) {
           By ${book.author}
         </p>
 
-        ${
-          book.stock === "Out of Stock"
-            ? `<p class="price">Out of Stock</p>`
-            : `<p class="price">$${book.price.toFixed(2)}</p>`
-        }
+        ${stockDisplay}
 
       </div>
 
@@ -342,7 +331,7 @@ function openProduct(book) {
   document.getElementById(
     "modal-price"
   ).textContent =
-    book.stock === "Out of Stock"
+    book.stock <= 0
       ? "Out of Stock"
       : "$" + book.price.toFixed(2);
 
@@ -376,7 +365,7 @@ function addCurrentBook() {
   if (!currentBook) return;
 
 
-  if (currentBook.stock === "Out of Stock") {
+  if (currentBook.stock <= 0) {
 
     alert(
       "Sorry! This book is currently out of stock."
