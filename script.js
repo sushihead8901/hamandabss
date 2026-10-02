@@ -1,70 +1,19 @@
 /* =========================
+   SUPABASE CONNECTION
+========================= */
+
+const SUPABASE_URL =
+  "https://wxxzdeokudocewgtykuy.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_PDhLn71THPJKLnjGXZDmrg_Qv3KOGGJ";
+
+
+/* =========================
    ITB'S BOOK DATABASE
 ========================= */
 
-const books = [
-
-  {
-    title: "The Last Summer",
-    author: "Luis",
-    category: "Young Adult",
-    price: 9.99,
-    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=700&q=80",
-    description:
-      "A young adult story about friendship, change, and one unforgettable summer."
-  },
-
-  {
-    title: "Beyond the Door",
-    author: "Pablo",
-    category: "Fiction",
-    price: 12.99,
-    image: "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=700&q=80",
-    description:
-      "A fictional adventure that begins when an ordinary door leads somewhere unexpected."
-  },
-
-  {
-    title: "Understanding Space",
-    author: "Luis",
-    category: "Non-Fiction",
-    price: 14.99,
-    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=700&q=80",
-    description:
-      "An introduction to space, planets, stars, galaxies, and the universe."
-  },
-
-  {
-    title: "The Life of an Inventor",
-    author: "Pablo",
-    category: "Biography",
-    price: 11.99,
-    image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=700&q=80",
-    description:
-      "Explore the life, challenges, and accomplishments of a famous inventor."
-  },
-
-  {
-    title: "Mystery at Midnight",
-    author: "Luis",
-    category: "Fiction",
-    price: 10.99,
-    image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=700&q=80",
-    description:
-      "A mysterious story filled with clues, strange events, and unexpected discoveries."
-  },
-
-  {
-    title: "Growing Up",
-    author: "Pablo",
-    category: "Young Adult",
-    price: 8.99,
-    image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=700&q=80",
-    description:
-      "A coming-of-age story about school, friendship, and figuring out what comes next."
-  }
-
-];
+let books = [];
 
 
 /* =========================
@@ -79,12 +28,120 @@ let currentCategory = "All";
 
 
 /* =========================
+   LOAD BOOKS FROM SUPABASE
+========================= */
+
+async function loadBooks() {
+
+  try {
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/itb_contacts?select=id,name,number,type_of_book&order=id.asc`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+
+
+    if (!response.ok) {
+      throw new Error(
+        `Supabase returned ${response.status}`
+      );
+    }
+
+
+    const data = await response.json();
+
+
+    /*
+      Convert Supabase rows into the format
+      used by the ITB store.
+    */
+
+    books = data.map(book => ({
+
+      id: book.id,
+
+      title: book.name,
+
+      author: "ITB Author",
+
+      category: book.type_of_book || "Fiction",
+
+      /*
+        Your current "number" column contains
+        "Out of Stock" for the Dino Nuggets book.
+
+        Since there is no price column yet,
+        the store uses $0.00 until a price is added.
+      */
+
+      price: 0,
+
+      stock: book.number,
+
+      image:
+        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=700&q=80",
+
+      description:
+        book.number === "Out of Stock"
+          ? "This book is currently out of stock."
+          : "A book available from ITB'S — Ink to Books."
+
+    }));
+
+
+    console.log(
+      "Books successfully loaded from Supabase:",
+      books
+    );
+
+
+    displayBooks(books);
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load books from Supabase:",
+      error
+    );
+
+
+    const grid =
+      document.getElementById("book-grid");
+
+
+    grid.innerHTML = `
+      <p style="
+        grid-column:1/-1;
+        text-align:center;
+        padding:50px;
+        color:#b00020;
+      ">
+        We couldn't load the books right now.
+        Please try again later.
+      </p>
+    `;
+
+  }
+
+}
+
+
+/* =========================
    DISPLAY BOOKS
 ========================= */
 
 function displayBooks(list) {
 
-  const grid = document.getElementById("book-grid");
+  const grid =
+    document.getElementById("book-grid");
+
 
   grid.innerHTML = "";
 
@@ -103,16 +160,22 @@ function displayBooks(list) {
     `;
 
     return;
+
   }
 
 
-  list.forEach((book, index) => {
+  list.forEach(book => {
 
-    const card = document.createElement("article");
+    const card =
+      document.createElement("article");
 
-    card.className = "book-card";
 
-    card.onclick = () => openProduct(book);
+    card.className =
+      "book-card";
+
+
+    card.onclick = () =>
+      openProduct(book);
 
 
     card.innerHTML = `
@@ -134,9 +197,11 @@ function displayBooks(list) {
           By ${book.author}
         </p>
 
-        <p class="price">
-          $${book.price.toFixed(2)}
-        </p>
+        ${
+          book.stock === "Out of Stock"
+            ? `<p class="price">Out of Stock</p>`
+            : `<p class="price">$${book.price.toFixed(2)}</p>`
+        }
 
       </div>
 
@@ -161,7 +226,9 @@ function filterBooks(category, button) {
 
   document
     .querySelectorAll(".category")
-    .forEach(btn => btn.classList.remove("active"));
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
 
 
   button.classList.add("active");
@@ -183,6 +250,10 @@ function searchBooks() {
 }
 
 
+/* =========================
+   APPLY FILTERS
+========================= */
+
 function applyFilters() {
 
   const search =
@@ -192,22 +263,39 @@ function applyFilters() {
       .toLowerCase();
 
 
-  let filtered = books.filter(book => {
+  const filtered =
+    books.filter(book => {
 
-    const matchesCategory =
-      currentCategory === "All" ||
-      book.category === currentCategory;
-
-
-    const matchesSearch =
-      book.title.toLowerCase().includes(search) ||
-      book.author.toLowerCase().includes(search) ||
-      book.category.toLowerCase().includes(search);
+      const matchesCategory =
+        currentCategory === "All" ||
+        book.category === currentCategory;
 
 
-    return matchesCategory && matchesSearch;
+      const matchesSearch =
 
-  });
+        book.title
+          .toLowerCase()
+          .includes(search)
+
+        ||
+
+        book.author
+          .toLowerCase()
+          .includes(search)
+
+        ||
+
+        book.category
+          .toLowerCase()
+          .includes(search);
+
+
+      return (
+        matchesCategory &&
+        matchesSearch
+      );
+
+    });
 
 
   displayBooks(filtered);
@@ -224,28 +312,39 @@ function openProduct(book) {
   currentBook = book;
 
 
-  document.getElementById("modal-image").src =
-    book.image;
+  document.getElementById(
+    "modal-image"
+  ).src = book.image;
 
 
-  document.getElementById("modal-title").textContent =
-    book.title;
+  document.getElementById(
+    "modal-title"
+  ).textContent = book.title;
 
 
-  document.getElementById("modal-category").textContent =
-    book.category;
+  document.getElementById(
+    "modal-category"
+  ).textContent = book.category;
 
 
-  document.getElementById("modal-author").textContent =
+  document.getElementById(
+    "modal-author"
+  ).textContent =
     "Written by " + book.author;
 
 
-  document.getElementById("modal-description").textContent =
+  document.getElementById(
+    "modal-description"
+  ).textContent =
     book.description;
 
 
-  document.getElementById("modal-price").textContent =
-    "$" + book.price.toFixed(2);
+  document.getElementById(
+    "modal-price"
+  ).textContent =
+    book.stock === "Out of Stock"
+      ? "Out of Stock"
+      : "$" + book.price.toFixed(2);
 
 
   document
@@ -254,6 +353,10 @@ function openProduct(book) {
 
 }
 
+
+/* =========================
+   CLOSE PRODUCT
+========================= */
 
 function closeProduct() {
 
@@ -273,6 +376,17 @@ function addCurrentBook() {
   if (!currentBook) return;
 
 
+  if (currentBook.stock === "Out of Stock") {
+
+    alert(
+      "Sorry! This book is currently out of stock."
+    );
+
+    return;
+
+  }
+
+
   cart.push(currentBook);
 
 
@@ -290,8 +404,9 @@ function addCurrentBook() {
 
 function updateCart() {
 
-  document.getElementById("cart-count").textContent =
-    cart.length;
+  document.getElementById(
+    "cart-count"
+  ).textContent = cart.length;
 
 
   const container =
@@ -321,22 +436,29 @@ function updateCart() {
       document.createElement("div");
 
 
-    item.className = "cart-item";
+    item.className =
+      "cart-item";
 
 
     item.innerHTML = `
 
       <div>
 
-        <strong>${book.title}</strong>
+        <strong>
+          ${book.title}
+        </strong>
 
         <br>
 
-        <small>$${book.price.toFixed(2)}</small>
+        <small>
+          $${book.price.toFixed(2)}
+        </small>
 
       </div>
 
-      <button onclick="removeFromCart(${index})">
+      <button
+        onclick="removeFromCart(${index})"
+      >
         ✕
       </button>
 
@@ -348,7 +470,9 @@ function updateCart() {
   });
 
 
-  document.getElementById("cart-total").textContent =
+  document.getElementById(
+    "cart-total"
+  ).textContent =
     total.toFixed(2);
 
 }
@@ -375,6 +499,7 @@ function openCart() {
 
   updateCart();
 
+
   document
     .getElementById("cart-modal")
     .classList.add("show");
@@ -392,19 +517,29 @@ function closeCart() {
 
 
 /* =========================
-   CLOSE WHEN CLICKING
-   OUTSIDE WINDOW
+   CLOSE MODALS
+   WHEN CLICKING OUTSIDE
 ========================= */
 
 window.onclick = function(event) {
 
-  if (event.target.id === "product-modal") {
+  if (
+    event.target.id ===
+    "product-modal"
+  ) {
+
     closeProduct();
+
   }
 
 
-  if (event.target.id === "cart-modal") {
+  if (
+    event.target.id ===
+    "cart-modal"
+  ) {
+
     closeCart();
+
   }
 
 };
@@ -414,5 +549,6 @@ window.onclick = function(event) {
    START WEBSITE
 ========================= */
 
-displayBooks(books);
 updateCart();
+
+loadBooks();
