@@ -3,27 +3,235 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hamanda BSS</title>
-  
-  <!-- Link to your external CSS stylesheet -->
+
+  <title>ITB'S — Ink to Books</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <header>
-    <h1>Hamanda Book Selling Store</h1>
-  </header>
+  <!-- NAVIGATION -->
+  <nav class="navbar">
 
-  <main>
-    <p>Buy Books made by Luis and Pablo! These books can be nonfiction or fiction! Book Prices may depend on pages, photos, or words.</p>
-    <p>You can also upload your own books and wait for them to get apporved and we handle the printing!</p>
+    <div class="logo">
+      <span>ITB'S</span>
+      <small>Ink to Books</small>
+    </div>
+
+    <div class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#store">Store</a>
+      <a href="#about">About</a>
+    </div>
+
+    <button class="cart-button" onclick="openCart()">
+      🛒 Cart <span id="cart-count">0</span>
+    </button>
+
+  </nav>
+
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+
+    <div class="hero-text">
+
+      <p class="small-title">WELCOME TO ITB'S</p>
+
+      <h1>
+        From <span>Ink</span><br>
+        to Books.
+      </h1>
+
+      <p>
+        Discover books created by our authors.
+        Read something new, explore a story, or
+        find something fun to color.
+      </p>
+
+      <a href="#store" class="shop-button">
+        Browse Books →
+      </a>
+
+    </div>
+
+    <div class="hero-books">
+      <div class="fake-book book-one">ITB'S</div>
+      <div class="fake-book book-two">READ</div>
+      <div class="fake-book book-three">CREATE</div>
+    </div>
+
+  </section>
+
+
+  <!-- STORE -->
+  <main id="store">
+
+    <section class="store-header">
+
+      <p class="small-title">THE ITB STORE</p>
+
+      <h2>Find Your Next Book</h2>
+
+      <p>
+        Browse our collection and choose something
+        worth putting on your bookshelf.
+      </p>
+
+    </section>
+
+
+    <!-- SEARCH -->
+    <div class="search-container">
+
+      <input
+        type="text"
+        id="search"
+        placeholder="🔎 Search books..."
+        oninput="searchBooks()"
+      >
+
+    </div>
+
+
+    <!-- CATEGORY TABS -->
+    <div class="categories">
+
+      <button class="category active" onclick="filterBooks('All', this)">
+        All
+      </button>
+
+      <button class="category" onclick="filterBooks('Young Adult', this)">
+        Young Adult
+      </button>
+
+      <button class="category" onclick="filterBooks('Fiction', this)">
+        Fiction
+      </button>
+
+      <button class="category" onclick="filterBooks('Non-Fiction', this)">
+        Non-Fiction
+      </button>
+
+      <button class="category" onclick="filterBooks('Biography', this)">
+        Biography
+      </button>
+
+    </div>
+
+
+    <!-- BOOK GRID -->
+    <section class="book-grid" id="book-grid">
+    </section>
+
   </main>
 
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+
+    <div>
+
+      <p class="small-title">ABOUT ITB'S</p>
+
+      <h2>Where Ideas Become Books.</h2>
+
+      <p>
+        ITB'S — Ink to Books is a small student-run book
+        business focused on creating and selling books
+        for readers and coloring-book fans.
+      </p>
+
+      <p>
+        Our books can be written by our authors and
+        printed for customers through our printing process.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- PRODUCT POPUP -->
+  <div class="modal" id="product-modal">
+
+    <div class="modal-box">
+
+      <button class="close" onclick="closeProduct()">
+        ×
+      </button>
+
+      <img id="modal-image" src="" alt="Book cover">
+
+      <div class="modal-info">
+
+        <span id="modal-category"></span>
+
+        <h2 id="modal-title"></h2>
+
+        <p id="modal-author"></p>
+
+        <p id="modal-description"></p>
+
+        <h3 id="modal-price"></h3>
+
+        <button
+          class="add-button"
+          onclick="addCurrentBook()"
+        >
+          🛒 Add to Cart
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- CART -->
+  <div class="modal" id="cart-modal">
+
+    <div class="cart-box">
+
+      <button class="close" onclick="closeCart()">
+        ×
+      </button>
+
+      <h2>Your Cart 🛒</h2>
+
+      <div id="cart-items"></div>
+
+      <div class="cart-total">
+        Total: $<span id="cart-total">0.00</span>
+      </div>
+
+      <button class="checkout-button">
+        Checkout
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- FOOTER -->
   <footer>
-    <p>&copy; Hamanda BSS</p>
+
+    <div class="footer-logo">
+      ITB'S
+      <small>Ink to Books</small>
+    </div>
+
+    <p>
+      © 2026 ITB'S — Ink to Books
+    </p>
+
   </footer>
 
-  <!-- Link to your external JavaScript file -->
+
   <script src="script.js"></script>
+
 </body>
 </html>
